@@ -1,0 +1,21 @@
+version: 2
+updates:
+- package-ecosystem: maven
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "04:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: de.lars-sh:parent
+    versions:
+    - 0.9.11
+  - dependency-name: com.alibaba:fastjson
+    versions:
+    - 1.2.75
+  - dependency-name: org.apache.commons:commons-lang3
+    versions:
+    - "3.11"
+  - dependency-name: com.beust:jcommander
+    versions:
+    - "1.78"
