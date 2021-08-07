@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PropertyDiff.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">swagger-diff</a> &gt; <a href="index.source.html" class="el_package">com.deepoove.swagger.diff.compare</a> &gt; <span class="el_source">PropertyDiff.java</span></div><h1>PropertyDiff.java</h1><pre class="source lang-java linenums">package com.deepoove.swagger.diff.compare;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.deepoove.swagger.diff.model.ElProperty;
+
+import io.swagger.models.Model;
+import io.swagger.models.properties.Property;
+
+public class PropertyDiff {
+
+    private List&lt;ElProperty&gt; increased;
+    private List&lt;ElProperty&gt; missing;
+    private List&lt;ElProperty&gt; changed;
+
+    Map&lt;String, Model&gt; oldDedinitions;
+    Map&lt;String, Model&gt; newDedinitions;
+
+<span class="fc" id="L21">    private PropertyDiff() {</span>
+<span class="fc" id="L22">        increased = new ArrayList&lt;ElProperty&gt;();</span>
+<span class="fc" id="L23">        missing = new ArrayList&lt;ElProperty&gt;();</span>
+<span class="fc" id="L24">        changed = new ArrayList&lt;ElProperty&gt;();</span>
+<span class="fc" id="L25">    }</span>
+
+    public static PropertyDiff buildWithDefinition(Map&lt;String, Model&gt; left, Map&lt;String, Model&gt; right) {
+<span class="fc" id="L28">        PropertyDiff diff = new PropertyDiff();</span>
+<span class="fc" id="L29">        diff.oldDedinitions = left;</span>
+<span class="fc" id="L30">        diff.newDedinitions = right;</span>
+<span class="fc" id="L31">        return diff;</span>
+    }
+
+    public PropertyDiff diff(Property left, Property right) {
+<span class="fc" id="L35">        ModelDiff diff = ModelDiff.buildWithDefinition(oldDedinitions, newDedinitions).diff(left, right);</span>
+<span class="fc" id="L36">        increased.addAll(diff.getIncreased());</span>
+<span class="fc" id="L37">        missing.addAll(diff.getMissing());</span>
+<span class="fc" id="L38">        changed.addAll(diff.getChanged());</span>
+<span class="fc" id="L39">        return this;</span>
+    }
+
+    public List&lt;ElProperty&gt; getIncreased() {
+<span class="fc" id="L43">        return increased;</span>
+    }
+
+    public void setIncreased(List&lt;ElProperty&gt; increased) {
+<span class="nc" id="L47">        this.increased = increased;</span>
+<span class="nc" id="L48">    }</span>
+
+    public List&lt;ElProperty&gt; getMissing() {
+<span class="fc" id="L51">        return missing;</span>
+    }
+
+    public void setMissing(List&lt;ElProperty&gt; missing) {
+<span class="nc" id="L55">        this.missing = missing;</span>
+<span class="nc" id="L56">    }</span>
+
+    public List&lt;ElProperty&gt; getChanged() {
+<span class="fc" id="L59">        return changed;</span>
+    }
+
+    public void setChanged(List&lt;ElProperty&gt; changed) {
+<span class="nc" id="L63">        this.changed = changed;</span>
+<span class="nc" id="L64">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

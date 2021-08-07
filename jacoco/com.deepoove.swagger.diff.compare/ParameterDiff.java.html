@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ParameterDiff.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">swagger-diff</a> &gt; <a href="index.source.html" class="el_package">com.deepoove.swagger.diff.compare</a> &gt; <span class="el_source">ParameterDiff.java</span></div><h1>ParameterDiff.java</h1><pre class="source lang-java linenums">package com.deepoove.swagger.diff.compare;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.deepoove.swagger.diff.model.ChangedParameter;
+import com.deepoove.swagger.diff.model.ElProperty;
+import com.google.common.collect.Lists;
+
+import io.swagger.models.Model;
+import io.swagger.models.parameters.AbstractSerializableParameter;
+import io.swagger.models.parameters.BodyParameter;
+import io.swagger.models.parameters.Parameter;
+import io.swagger.models.parameters.SerializableParameter;
+import io.swagger.models.properties.Property;
+import io.swagger.models.properties.StringProperty;
+
+/**
+ * compare two parameter
+ *
+ * @author Sayi
+ */
+public class ParameterDiff {
+
+    private List&lt;Parameter&gt; increased;
+    private List&lt;Parameter&gt; missing;
+    private List&lt;ChangedParameter&gt; changed;
+
+    Map&lt;String, Model&gt; oldDedinitions;
+    Map&lt;String, Model&gt; newDedinitions;
+
+<span class="fc" id="L35">    private ParameterDiff() {</span>
+<span class="fc" id="L36">        this.increased = new ArrayList&lt;Parameter&gt;();</span>
+<span class="fc" id="L37">        this.missing = new ArrayList&lt;Parameter&gt;();</span>
+<span class="fc" id="L38">        this.changed = new ArrayList&lt;ChangedParameter&gt;();</span>
+<span class="fc" id="L39">    }</span>
+
+    public static ParameterDiff buildWithDefinition(Map&lt;String, Model&gt; left, Map&lt;String, Model&gt; right) {
+<span class="fc" id="L42">        ParameterDiff diff = new ParameterDiff();</span>
+<span class="fc" id="L43">        diff.oldDedinitions = left;</span>
+<span class="fc" id="L44">        diff.newDedinitions = right;</span>
+<span class="fc" id="L45">        return diff;</span>
+    }
+
+    public ParameterDiff diff(List&lt;Parameter&gt; left, List&lt;Parameter&gt; right) {
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        if (null == left) left = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">        if (null == right) right = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L52">        ListDiff&lt;Parameter&gt; paramDiff = ListDiff.diff(left, right, (t, param) -&gt; {</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">            for (Parameter para : t) {</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">                if (param.getName().equals(para.getName())) { return para; }</span>
+<span class="fc" id="L55">            }</span>
+<span class="fc" id="L56">            return null;</span>
+        });
+<span class="fc" id="L58">        this.increased.addAll(paramDiff.getIncreased());</span>
+<span class="fc" id="L59">        this.missing.addAll(paramDiff.getMissing());</span>
+<span class="fc" id="L60">        Map&lt;Parameter, Parameter&gt; shared = paramDiff.getShared();</span>
+<span class="fc" id="L61">        shared.forEach((leftPara, rightPara) -&gt; {</span>
+<span class="fc" id="L62">            ChangedParameter changedParameter = new ChangedParameter();</span>
+<span class="fc" id="L63">            changedParameter.setLeftParameter(leftPara);</span>
+<span class="fc" id="L64">            changedParameter.setRightParameter(rightPara);</span>
+<span class="pc bpc" id="L65" title="1 of 4 branches missed.">            if (leftPara instanceof BodyParameter &amp;&amp; rightPara instanceof BodyParameter) {</span>
+<span class="fc" id="L66">                BodyParameter leftBodyPara = (BodyParameter) leftPara;</span>
+<span class="fc" id="L67">                Model leftSchema = leftBodyPara.getSchema();</span>
+<span class="fc" id="L68">                BodyParameter rightBodyPara = (BodyParameter) rightPara;</span>
+<span class="fc" id="L69">                Model rightSchema = rightBodyPara.getSchema();</span>
+
+<span class="fc" id="L71">                ModelDiff diff = ModelDiff.buildWithDefinition(oldDedinitions, newDedinitions).diff(leftSchema,</span>
+<span class="fc" id="L72">                        rightSchema, leftPara.getName());</span>
+<span class="fc" id="L73">                changedParameter.setIncreased(diff.getIncreased());</span>
+<span class="fc" id="L74">                changedParameter.setMissing(diff.getMissing());</span>
+<span class="fc" id="L75">                changedParameter.setChanged(diff.getChanged());</span>
+
+            }
+
+            // Let's handle the case where the new API has fx changed the type
+            // of PathParameter from being of type String to type integer
+<span class="pc bpc" id="L81" title="1 of 4 branches missed.">            if (leftPara instanceof AbstractSerializableParameter</span>
+                    &amp;&amp; rightPara instanceof AbstractSerializableParameter) {
+<span class="fc bfc" id="L83" title="All 2 branches covered.">                if (!leftPara.equals(rightPara)) {</span>
+<span class="fc" id="L84">                    ElProperty elProperty = new ElProperty();</span>
+<span class="fc" id="L85">                    elProperty.setEl(rightPara.getName());</span>
+<span class="fc" id="L86">                    elProperty.setProperty(mapToProperty((SerializableParameter) rightPara));</span>
+<span class="fc" id="L87">                    changedParameter.setChanged(Lists.newArrayList(elProperty));</span>
+                }
+            }
+
+            // is requried
+<span class="fc" id="L92">            boolean rightRequired = rightPara.getRequired();</span>
+<span class="fc" id="L93">            boolean leftRequired = leftPara.getRequired();</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            changedParameter.setChangeRequired(leftRequired != rightRequired);</span>
+
+            // description
+<span class="fc" id="L97">            String description = rightPara.getDescription();</span>
+<span class="fc" id="L98">            String oldPescription = leftPara.getDescription();</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">            if (StringUtils.isBlank(description)) description = &quot;&quot;;</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">            if (StringUtils.isBlank(oldPescription)) oldPescription = &quot;&quot;;</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">            changedParameter.setChangeDescription(!description.equals(oldPescription));</span>
+
+<span class="fc bfc" id="L103" title="All 2 branches covered.">            if (changedParameter.isDiff()) {</span>
+<span class="fc" id="L104">                this.changed.add(changedParameter);</span>
+            }
+
+<span class="fc" id="L107">        });</span>
+
+<span class="fc" id="L109">        return this;</span>
+    }
+
+    private Property mapToProperty(SerializableParameter rightPara) {
+<span class="fc" id="L113">        Property prop = new StringProperty();</span>
+<span class="fc" id="L114">        prop.setAccess(rightPara.getAccess());</span>
+<span class="fc" id="L115">        prop.setAllowEmptyValue(rightPara.getAllowEmptyValue());</span>
+<span class="fc" id="L116">        prop.setDescription(rightPara.getDescription());</span>
+<span class="fc" id="L117">        prop.setName(rightPara.getName());</span>
+<span class="fc" id="L118">        prop.setReadOnly(rightPara.isReadOnly());</span>
+<span class="fc" id="L119">        prop.setRequired(rightPara.getRequired());</span>
+<span class="fc" id="L120">        return prop;</span>
+    }
+
+    public List&lt;Parameter&gt; getIncreased() {
+<span class="fc" id="L124">        return increased;</span>
+    }
+
+    public void setIncreased(List&lt;Parameter&gt; increased) {
+<span class="nc" id="L128">        this.increased = increased;</span>
+<span class="nc" id="L129">    }</span>
+
+    public List&lt;Parameter&gt; getMissing() {
+<span class="fc" id="L132">        return missing;</span>
+    }
+
+    public void setMissing(List&lt;Parameter&gt; missing) {
+<span class="nc" id="L136">        this.missing = missing;</span>
+<span class="nc" id="L137">    }</span>
+
+    public List&lt;ChangedParameter&gt; getChanged() {
+<span class="fc" id="L140">        return changed;</span>
+    }
+
+    public void setChanged(List&lt;ChangedParameter&gt; changed) {
+<span class="nc" id="L144">        this.changed = changed;</span>
+<span class="nc" id="L145">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

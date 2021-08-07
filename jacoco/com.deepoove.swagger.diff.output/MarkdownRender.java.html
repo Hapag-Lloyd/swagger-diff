@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MarkdownRender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">swagger-diff</a> &gt; <a href="index.source.html" class="el_package">com.deepoove.swagger.diff.output</a> &gt; <span class="el_source">MarkdownRender.java</span></div><h1>MarkdownRender.java</h1><pre class="source lang-java linenums">package com.deepoove.swagger.diff.output;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import com.deepoove.swagger.diff.SwaggerDiff;
+import com.deepoove.swagger.diff.model.*;
+
+import io.swagger.models.HttpMethod;
+import io.swagger.models.parameters.Parameter;
+import io.swagger.models.properties.Property;
+
+public class MarkdownRender implements Render {
+
+<span class="fc" id="L16">    final String H3 = &quot;### &quot;;</span>
+<span class="fc" id="L17">    final String H2 = &quot;## &quot;;</span>
+<span class="fc" id="L18">    final String BLOCKQUOTE = &quot;&gt; &quot;;</span>
+<span class="fc" id="L19">    final String CODE = &quot;`&quot;;</span>
+<span class="fc" id="L20">    final String PRE_CODE = &quot;    &quot;;</span>
+<span class="fc" id="L21">    final String PRE_LI = &quot;    &quot;;</span>
+<span class="fc" id="L22">    final String LI = &quot;* &quot;;</span>
+<span class="fc" id="L23">    final String HR = &quot;---\n&quot;;</span>
+
+<span class="fc" id="L25">    public MarkdownRender() {}</span>
+
+    public String render(SwaggerDiff diff) {
+<span class="fc" id="L28">        List&lt;Endpoint&gt; newEndpoints = diff.getNewEndpoints();</span>
+<span class="fc" id="L29">        String ol_newEndpoint = ol_newEndpoint(newEndpoints);</span>
+
+<span class="fc" id="L31">        List&lt;Endpoint&gt; missingEndpoints = diff.getMissingEndpoints();</span>
+<span class="fc" id="L32">        String ol_missingEndpoint = ol_missingEndpoint(missingEndpoints);</span>
+
+<span class="fc" id="L34">        List&lt;ChangedEndpoint&gt; changedEndpoints = diff.getChangedEndpoints();</span>
+<span class="fc" id="L35">        String ol_changed = ol_changed(changedEndpoints);</span>
+
+<span class="fc" id="L37">        return renderHtml(diff.getOldVersion(), diff.getNewVersion(), ol_newEndpoint, ol_missingEndpoint, ol_changed);</span>
+    }
+
+    public String renderHtml(String oldVersion, String newVersion, String ol_new, String ol_miss,
+                             String ol_changed) {
+<span class="fc" id="L42">        StringBuffer sb = new StringBuffer();</span>
+<span class="fc" id="L43">        sb.append(H2).append(&quot;Version &quot; + oldVersion + &quot; to &quot; + newVersion).append(&quot;\n&quot;).append(HR);</span>
+<span class="fc" id="L44">        sb.append(H3).append(&quot;What's New&quot;).append(&quot;\n&quot;).append(HR)</span>
+<span class="fc" id="L45">                .append(ol_new).append(&quot;\n&quot;).append(H3)</span>
+<span class="fc" id="L46">                .append(&quot;What's Deprecated&quot;).append(&quot;\n&quot;).append(HR)</span>
+<span class="fc" id="L47">                .append(ol_miss).append(&quot;\n&quot;).append(H3)</span>
+<span class="fc" id="L48">                .append(&quot;What's Changed&quot;).append(&quot;\n&quot;).append(HR)</span>
+<span class="fc" id="L49">                .append(ol_changed);</span>
+<span class="fc" id="L50">        return sb.toString();</span>
+    }
+
+    private String ol_newEndpoint(List&lt;Endpoint&gt; endpoints) {
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        if (null == endpoints) return &quot;&quot;;</span>
+<span class="fc" id="L55">        StringBuffer sb = new StringBuffer();</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        for (Endpoint endpoint : endpoints) {</span>
+<span class="fc" id="L57">            sb.append(li_newEndpoint(endpoint.getMethod().toString(),</span>
+<span class="fc" id="L58">                    endpoint.getPathUrl(), endpoint.getSummary()));</span>
+<span class="fc" id="L59">        }</span>
+<span class="fc" id="L60">        return sb.toString();</span>
+    }
+
+    private String li_newEndpoint(String method, String path, String desc) {
+<span class="fc" id="L64">        StringBuffer sb = new StringBuffer();</span>
+<span class="fc" id="L65">        sb.append(LI).append(CODE).append(method).append(CODE)</span>
+<span class="fc" id="L66">                .append(&quot; &quot; + path).append(&quot; &quot; + desc + &quot;\n&quot;);</span>
+<span class="fc" id="L67">        return sb.toString();</span>
+    }
+
+    private String ol_missingEndpoint(List&lt;Endpoint&gt; endpoints) {
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        if (null == endpoints) return &quot;&quot;;</span>
+<span class="fc" id="L72">        StringBuffer sb = new StringBuffer();</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        for (Endpoint endpoint : endpoints) {</span>
+<span class="fc" id="L74">            sb.append(li_newEndpoint(endpoint.getMethod().toString(),</span>
+<span class="fc" id="L75">                    endpoint.getPathUrl(), endpoint.getSummary()));</span>
+<span class="fc" id="L76">        }</span>
+<span class="fc" id="L77">        return sb.toString();</span>
+    }
+
+    private String ol_changed(List&lt;ChangedEndpoint&gt; changedEndpoints) {
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">        if (null == changedEndpoints) return &quot;&quot;;</span>
+<span class="fc" id="L82">        StringBuffer sb = new StringBuffer();</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        for (ChangedEndpoint changedEndpoint : changedEndpoints) {</span>
+<span class="fc" id="L84">            String pathUrl = changedEndpoint.getPathUrl();</span>
+<span class="fc" id="L85">            Map&lt;HttpMethod, ChangedOperation&gt; changedOperations = changedEndpoint</span>
+<span class="fc" id="L86">                    .getChangedOperations();</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">            for (Entry&lt;HttpMethod, ChangedOperation&gt; entry : changedOperations</span>
+<span class="fc" id="L88">                    .entrySet()) {</span>
+<span class="fc" id="L89">                String method = entry.getKey().toString();</span>
+<span class="fc" id="L90">                ChangedOperation changedOperation = entry.getValue();</span>
+<span class="fc" id="L91">                String desc = changedOperation.getSummary();</span>
+
+<span class="fc" id="L93">                StringBuffer ul_detail = new StringBuffer();</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">                if (changedOperation.isDiffParam()) {</span>
+<span class="fc" id="L95">                    ul_detail.append(PRE_LI).append(&quot;Parameters&quot;)</span>
+<span class="fc" id="L96">                            .append(ul_param(changedOperation));</span>
+                }
+<span class="fc bfc" id="L98" title="All 2 branches covered.">                if (changedOperation.isDiffProp()) {</span>
+<span class="fc" id="L99">                    ul_detail.append(PRE_LI).append(&quot;Return Type&quot;)</span>
+<span class="fc" id="L100">                            .append(ul_response(changedOperation));</span>
+                }
+<span class="fc bfc" id="L102" title="All 2 branches covered.">                if (changedOperation.isDiffProduces()) {</span>
+<span class="fc" id="L103">                    ul_detail.append(PRE_LI).append(&quot;Produces&quot;)</span>
+<span class="fc" id="L104">                            .append(ul_produce(changedOperation));</span>
+                }
+<span class="fc bfc" id="L106" title="All 2 branches covered.">                if (changedOperation.isDiffConsumes()) {</span>
+<span class="fc" id="L107">                    ul_detail.append(PRE_LI).append(&quot;Consumes&quot;)</span>
+<span class="fc" id="L108">                            .append(ul_consume(changedOperation));</span>
+                }
+<span class="fc" id="L110">                sb.append(CODE).append(method).append(CODE)</span>
+<span class="fc" id="L111">                        .append(&quot; &quot; + pathUrl).append(&quot; &quot; + desc + &quot;  \n&quot;)</span>
+<span class="fc" id="L112">                        .append(ul_detail);</span>
+<span class="fc" id="L113">            }</span>
+<span class="fc" id="L114">        }</span>
+<span class="fc" id="L115">        return sb.toString();</span>
+    }
+
+    private String ul_response(ChangedOperation changedOperation) {
+<span class="fc" id="L119">        List&lt;ElProperty&gt; addProps = changedOperation.getAddProps();</span>
+<span class="fc" id="L120">        List&lt;ElProperty&gt; delProps = changedOperation.getMissingProps();</span>
+<span class="fc" id="L121">        List&lt;ElProperty&gt; changedProps = changedOperation.getChangedProps();</span>
+<span class="fc" id="L122">        StringBuffer sb = new StringBuffer(&quot;\n\n&quot;);</span>
+
+<span class="fc" id="L124">        String prefix = PRE_LI + PRE_CODE;</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">        for (ElProperty prop : addProps) {</span>
+<span class="fc" id="L126">            sb.append(PRE_LI).append(PRE_CODE).append(li_addProp(prop) + &quot;\n&quot;);</span>
+<span class="fc" id="L127">        }</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">        for (ElProperty prop : delProps) {</span>
+<span class="fc" id="L129">            sb.append(prefix).append(li_missingProp(prop) + &quot;\n&quot;);</span>
+<span class="fc" id="L130">        }</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        for (ElProperty prop : changedProps) {</span>
+<span class="fc" id="L132">            sb.append(prefix).append(li_changedProp(prop) + &quot;\n&quot;);</span>
+<span class="fc" id="L133">        }</span>
+<span class="fc" id="L134">        return sb.toString();</span>
+    }
+
+    private String li_missingProp(ElProperty prop) {
+<span class="fc" id="L138">        Property property = prop.getProperty();</span>
+<span class="fc" id="L139">        StringBuffer sb = new StringBuffer(&quot;&quot;);</span>
+<span class="fc" id="L140">        sb.append(&quot;Delete &quot;).append(prop.getEl())</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">                .append(null == property.getDescription() ? &quot;&quot;</span>
+<span class="nc" id="L142">                        : (&quot; //&quot; + property.getDescription()));</span>
+<span class="fc" id="L143">        return sb.toString();</span>
+    }
+
+    private String li_addProp(ElProperty prop) {
+<span class="fc" id="L147">        Property property = prop.getProperty();</span>
+<span class="fc" id="L148">        StringBuffer sb = new StringBuffer(&quot;&quot;);</span>
+<span class="fc" id="L149">        sb.append(&quot;Insert &quot;).append(prop.getEl())</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">                .append(null == property.getDescription() ? &quot;&quot;</span>
+<span class="fc" id="L151">                        : (&quot; //&quot; + property.getDescription()));</span>
+<span class="fc" id="L152">        return sb.toString();</span>
+    }
+
+    private String li_changedProp(ElProperty prop) {
+<span class="fc" id="L156">        Property property = prop.getProperty();</span>
+<span class="fc" id="L157">        String prefix = &quot;Modify &quot;;</span>
+<span class="fc" id="L158">        String desc = &quot; //&quot; + property.getDescription();</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        String postfix = (null == property.getDescription() ? &quot;&quot; : desc);</span>
+
+<span class="fc" id="L161">        StringBuffer sb = new StringBuffer(&quot;&quot;);</span>
+<span class="fc" id="L162">        sb.append(prefix).append(prop.getEl())</span>
+<span class="fc" id="L163">                .append(postfix);</span>
+<span class="fc" id="L164">        return sb.toString();</span>
+    }
+
+    private String ul_param(ChangedOperation changedOperation) {
+<span class="fc" id="L168">        List&lt;Parameter&gt; addParameters = changedOperation.getAddParameters();</span>
+<span class="fc" id="L169">        List&lt;Parameter&gt; delParameters = changedOperation.getMissingParameters();</span>
+<span class="fc" id="L170">        List&lt;ChangedParameter&gt; changedParameters = changedOperation</span>
+<span class="fc" id="L171">                .getChangedParameter();</span>
+<span class="fc" id="L172">        StringBuffer sb = new StringBuffer(&quot;\n\n&quot;);</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        for (Parameter param : addParameters) {</span>
+<span class="fc" id="L174">            sb.append(PRE_LI).append(PRE_CODE)</span>
+<span class="fc" id="L175">                    .append(li_addParam(param) + &quot;\n&quot;);</span>
+<span class="fc" id="L176">        }</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        for (ChangedParameter param : changedParameters) {</span>
+<span class="fc" id="L178">            List&lt;ElProperty&gt; increased = param.getIncreased();</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">            for (ElProperty prop : increased) {</span>
+<span class="fc" id="L180">                sb.append(PRE_LI).append(PRE_CODE)</span>
+<span class="fc" id="L181">                        .append(li_addProp(prop) + &quot;\n&quot;);</span>
+<span class="fc" id="L182">            }</span>
+<span class="fc" id="L183">        }</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">        for (ChangedParameter param : changedParameters) {</span>
+<span class="fc" id="L185">            boolean changeRequired = param.isChangeRequired();</span>
+<span class="fc" id="L186">            boolean changeDescription = param.isChangeDescription();</span>
+<span class="fc bfc" id="L187" title="All 4 branches covered.">            if (changeRequired || changeDescription) sb.append(PRE_LI)</span>
+<span class="fc" id="L188">                    .append(PRE_CODE).append(li_changedParam(param) + &quot;\n&quot;);</span>
+<span class="fc" id="L189">        }</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        for (ChangedParameter param : changedParameters) {</span>
+<span class="fc" id="L191">            List&lt;ElProperty&gt; missing = param.getMissing();</span>
+<span class="fc" id="L192">            List&lt;ElProperty&gt; changed = param.getChanged();</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">            for (ElProperty prop : missing) {</span>
+<span class="fc" id="L194">                sb.append(PRE_LI).append(PRE_CODE)</span>
+<span class="fc" id="L195">                        .append(li_missingProp(prop) + &quot;\n&quot;);</span>
+<span class="fc" id="L196">            }</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">            for (ElProperty prop : changed) {</span>
+<span class="fc" id="L198">                sb.append(PRE_LI).append(PRE_CODE)</span>
+<span class="fc" id="L199">                        .append(li_changedProp(prop) + &quot;\n&quot;);</span>
+<span class="fc" id="L200">            }</span>
+<span class="fc" id="L201">        }</span>
+<span class="fc bfc" id="L202" title="All 2 branches covered.">        for (Parameter param : delParameters) {</span>
+<span class="fc" id="L203">            sb.append(PRE_LI).append(PRE_CODE)</span>
+<span class="fc" id="L204">                    .append(li_missingParam(param) + &quot;\n&quot;);</span>
+<span class="fc" id="L205">        }</span>
+<span class="fc" id="L206">        return sb.toString();</span>
+    }
+
+    private String li_addParam(Parameter param) {
+<span class="fc" id="L210">        StringBuffer sb = new StringBuffer(&quot;&quot;);</span>
+<span class="fc" id="L211">        sb.append(&quot;Add &quot;).append(param.getName())</span>
+<span class="fc bfc" id="L212" title="All 2 branches covered.">                .append(null == param.getDescription() ? &quot;&quot;</span>
+<span class="fc" id="L213">                        : (&quot; //&quot; + param.getDescription()));</span>
+<span class="fc" id="L214">        return sb.toString();</span>
+    }
+
+    private String li_missingParam(Parameter param) {
+<span class="fc" id="L218">        StringBuffer sb = new StringBuffer(&quot;&quot;);</span>
+<span class="fc" id="L219">        sb.append(&quot;Delete &quot;).append(param.getName())</span>
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">                .append(null == param.getDescription() ? &quot;&quot;</span>
+<span class="fc" id="L221">                        : (&quot; //&quot; + param.getDescription()));</span>
+<span class="fc" id="L222">        return sb.toString();</span>
+    }
+
+    private String li_changedParam(ChangedParameter changeParam) {
+<span class="fc" id="L226">        boolean changeRequired = changeParam.isChangeRequired();</span>
+<span class="fc" id="L227">        boolean changeDescription = changeParam.isChangeDescription();</span>
+<span class="fc" id="L228">        Parameter rightParam = changeParam.getRightParameter();</span>
+<span class="fc" id="L229">        Parameter leftParam = changeParam.getLeftParameter();</span>
+<span class="fc" id="L230">        StringBuffer sb = new StringBuffer(&quot;&quot;);</span>
+<span class="fc" id="L231">        sb.append(rightParam.getName());</span>
+<span class="fc bfc" id="L232" title="All 2 branches covered.">        if (changeRequired) {</span>
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">            sb.append(&quot; change into &quot; + (rightParam.getRequired() ? &quot;required&quot; : &quot;not required&quot;));</span>
+        }
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">        if (changeDescription) {</span>
+<span class="fc" id="L236">            sb.append(&quot; Notes &quot;).append(leftParam.getDescription()).append(&quot; change into &quot;)</span>
+<span class="fc" id="L237">                    .append(rightParam.getDescription());</span>
+        }
+<span class="fc" id="L239">        return sb.toString();</span>
+    }
+
+    private String ul_produce(ChangedOperation changedOperation) {
+<span class="fc" id="L243">        List&lt;String&gt; addProduce = changedOperation.getAddProduces();</span>
+<span class="fc" id="L244">        List&lt;String&gt; delProduce = changedOperation.getMissingProduces();</span>
+<span class="fc" id="L245">        StringBuffer sb = new StringBuffer(&quot;\n\n&quot;);</span>
+
+<span class="fc" id="L247">        String prefix = PRE_LI + PRE_CODE;</span>
+<span class="pc bpc" id="L248" title="1 of 2 branches missed.">        for (String mt : addProduce) {</span>
+<span class="nc" id="L249">            sb.append(PRE_LI).append(PRE_CODE).append(li_addMediaType(mt) + &quot;\n&quot;);</span>
+<span class="nc" id="L250">        }</span>
+<span class="fc bfc" id="L251" title="All 2 branches covered.">        for (String mt : delProduce) {</span>
+<span class="fc" id="L252">            sb.append(prefix).append(li_missingMediaType(mt) + &quot;\n&quot;);</span>
+<span class="fc" id="L253">        }</span>
+<span class="fc" id="L254">        return sb.toString();</span>
+    }
+
+    private String ul_consume(ChangedOperation changedOperation) {
+<span class="fc" id="L258">        List&lt;String&gt; addConsume = changedOperation.getAddConsumes();</span>
+<span class="fc" id="L259">        List&lt;String&gt; delConsume = changedOperation.getMissingConsumes();</span>
+<span class="fc" id="L260">        StringBuffer sb = new StringBuffer(&quot;\n\n&quot;);</span>
+
+<span class="fc" id="L262">        String prefix = PRE_LI + PRE_CODE;</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">        for (String mt : addConsume) {</span>
+<span class="fc" id="L264">            sb.append(PRE_LI).append(PRE_CODE).append(li_addMediaType(mt) + &quot;\n&quot;);</span>
+<span class="fc" id="L265">        }</span>
+<span class="fc bfc" id="L266" title="All 2 branches covered.">        for (String mt : delConsume) {</span>
+<span class="fc" id="L267">            sb.append(prefix).append(li_missingMediaType(mt) + &quot;\n&quot;);</span>
+<span class="fc" id="L268">        }</span>
+<span class="fc" id="L269">        return sb.toString();</span>
+    }
+
+    private String li_missingMediaType(String type) {
+<span class="fc" id="L273">        StringBuffer sb = new StringBuffer(&quot;&quot;);</span>
+<span class="fc" id="L274">        sb.append(&quot;Delete &quot;).append(type);</span>
+<span class="fc" id="L275">        return sb.toString();</span>
+    }
+
+    private String li_addMediaType(String type) {
+<span class="fc" id="L279">        StringBuffer sb = new StringBuffer(&quot;&quot;);</span>
+<span class="fc" id="L280">        sb.append(&quot;Insert &quot;).append(type);</span>
+<span class="fc" id="L281">        return sb.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

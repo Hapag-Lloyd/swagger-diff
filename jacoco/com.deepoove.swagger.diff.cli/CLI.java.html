@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CLI.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">swagger-diff</a> &gt; <a href="index.source.html" class="el_package">com.deepoove.swagger.diff.cli</a> &gt; <span class="el_source">CLI.java</span></div><h1>CLI.java</h1><pre class="source lang-java linenums">package com.deepoove.swagger.diff.cli;
+
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.deepoove.swagger.diff.SwaggerDiff;
+import com.deepoove.swagger.diff.output.HtmlRender;
+import com.deepoove.swagger.diff.output.JsonRender;
+import com.deepoove.swagger.diff.output.MarkdownRender;
+import com.deepoove.swagger.diff.output.Render;
+
+/**
+ * $java -jar swagger-diff.jar -old http://www.petstore.com/swagger.json \n
+ *  -new http://www.petstore.com/swagger_new.json \n
+ *  -v 2.0 \n
+ *  -output-mode markdown \n
+ *
+ * @author Sayi
+ */
+<span class="fc" id="L19">public class CLI {</span>
+
+    private static final String OUTPUT_MODE_MARKDOWN = &quot;markdown&quot;;
+    private static final String OUTPUT_MODE_JSON = &quot;json&quot;;
+
+    @Parameter(names = &quot;-old&quot;, description = &quot;old api-doc location:Json file path or Http url&quot;, required = true, order = 0)
+    private String oldSpec;
+
+    @Parameter(names = &quot;-new&quot;, description = &quot;new api-doc location:Json file path or Http url&quot;, required = true, order = 1)
+    private String newSpec;
+
+<span class="fc" id="L30">    @Parameter(names = &quot;-v&quot;, description = &quot;swagger version:1.0 or 2.0&quot;, validateWith=  RegexValidator.class, order = 2)</span>
+    @Regex(&quot;(2\\.0|1\\.0)&quot;)
+    private String version = SwaggerDiff.SWAGGER_VERSION_V2;
+
+<span class="fc" id="L34">    @Parameter(names = &quot;-output-mode&quot;, description = &quot;render mode: markdown, html or json&quot;, validateWith = RegexValidator.class, order = 3)</span>
+    @Regex(&quot;(markdown|html|json)&quot;)
+    private String outputMode = OUTPUT_MODE_MARKDOWN;
+
+    @Parameter(names = &quot;--help&quot;, help = true, order = 5)
+    private boolean help;
+
+    @Parameter(names = &quot;--version&quot;, description = &quot;swagger-diff tool version&quot;, help = true, order = 6)
+    private boolean v;
+
+    public static void main(String[] args) {
+<span class="nc" id="L45">        CLI cli = new CLI();</span>
+<span class="nc" id="L46">        JCommander jCommander = JCommander.newBuilder()</span>
+<span class="nc" id="L47">            .addObject(cli)</span>
+<span class="nc" id="L48">            .build();</span>
+<span class="nc" id="L49">        jCommander.parse(args);</span>
+<span class="nc" id="L50">        cli.run(jCommander);</span>
+<span class="nc" id="L51">    }</span>
+
+    public void run(JCommander jCommander) {
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (help){</span>
+<span class="fc" id="L55">            jCommander.setProgramName(&quot;java -jar swagger-diff.jar&quot;);</span>
+<span class="fc" id="L56">            jCommander.usage();</span>
+<span class="fc" id="L57">            return;</span>
+        }
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (v){</span>
+<span class="fc" id="L60">            JCommander.getConsole().println(&quot;1.2.2&quot;);</span>
+<span class="fc" id="L61">            return;</span>
+        }
+
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        SwaggerDiff diff = SwaggerDiff.SWAGGER_VERSION_V2.equals(version)</span>
+<span class="pc" id="L65">                ? SwaggerDiff.compareV2(oldSpec, newSpec) : SwaggerDiff.compareV1(oldSpec, newSpec);</span>
+
+<span class="fc" id="L67">        String render = getRender(outputMode).render(diff);</span>
+<span class="fc" id="L68">        JCommander.getConsole().println(render);</span>
+<span class="fc" id="L69">    }</span>
+
+    private Render getRender(String outputMode) {
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (OUTPUT_MODE_MARKDOWN.equals(outputMode)) {</span>
+<span class="fc" id="L73">            return new MarkdownRender();</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        } else if (OUTPUT_MODE_JSON.equals(outputMode)) {</span>
+<span class="nc" id="L75">            return new JsonRender();</span>
+        }
+<span class="nc" id="L77">        return new HtmlRender(&quot;Changelog&quot;, &quot;http://deepoove.com/swagger-diff/stylesheets/demo.css&quot;);</span>
+    }
+
+    public String getOldSpec() {
+<span class="fc" id="L81">        return oldSpec;</span>
+    }
+
+    public String getNewSpec() {
+<span class="nc" id="L85">        return newSpec;</span>
+    }
+
+    public String getVersion() {
+<span class="fc" id="L89">        return version;</span>
+    }
+
+    public String getOutputMode() {
+<span class="nc" id="L93">        return outputMode;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

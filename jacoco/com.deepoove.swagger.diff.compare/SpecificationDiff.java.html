@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SpecificationDiff.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">swagger-diff</a> &gt; <a href="index.source.html" class="el_package">com.deepoove.swagger.diff.compare</a> &gt; <span class="el_source">SpecificationDiff.java</span></div><h1>SpecificationDiff.java</h1><pre class="source lang-java linenums">package com.deepoove.swagger.diff.compare;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.deepoove.swagger.diff.model.ChangedEndpoint;
+import com.deepoove.swagger.diff.model.ChangedOperation;
+import com.deepoove.swagger.diff.model.Endpoint;
+
+import io.swagger.models.HttpMethod;
+import io.swagger.models.Operation;
+import io.swagger.models.Path;
+import io.swagger.models.Response;
+import io.swagger.models.Swagger;
+import io.swagger.models.parameters.Parameter;
+import io.swagger.models.properties.Property;
+import io.swagger.models.utils.PropertyModelConverter;
+
+import java.util.*;
+import java.util.Map.Entry;
+
+import static java.util.stream.Collectors.toMap;
+
+/**
+ * compare two Swagger
+ *
+ * @author Sayi
+ *
+ */
+public class SpecificationDiff {
+
+    private List&lt;Endpoint&gt; newEndpoints;
+    private List&lt;Endpoint&gt; missingEndpoints;
+    private List&lt;ChangedEndpoint&gt; changedEndpoints;
+
+    private SpecificationDiff() {}
+
+    public static SpecificationDiff diff(Swagger oldSpec, Swagger newSpec) {
+<span class="pc bpc" id="L42" title="2 of 4 branches missed.">        if (null == oldSpec || null == newSpec) { throw new IllegalArgumentException(&quot;cannot diff null spec.&quot;); }</span>
+<span class="fc" id="L43">        SpecificationDiff instance = new SpecificationDiff();</span>
+<span class="fc" id="L44">		Map&lt;String, Path&gt; oldPaths = getPathsWithBasePath(oldSpec);</span>
+<span class="fc" id="L45">		Map&lt;String, Path&gt; newPaths = getPathsWithBasePath(newSpec);</span>
+
+        // Diff path
+<span class="fc" id="L48">        MapKeyDiff&lt;String, Path&gt; pathDiff = MapKeyDiff.diff(oldPaths, newPaths);</span>
+<span class="fc" id="L49">        instance.newEndpoints = convert2EndpointList(pathDiff.getIncreased());</span>
+<span class="fc" id="L50">        instance.missingEndpoints = convert2EndpointList(pathDiff.getMissing());</span>
+<span class="fc" id="L51">        instance.changedEndpoints = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L53">        List&lt;String&gt; sharedKey = pathDiff.getSharedKey();</span>
+<span class="fc" id="L54">        sharedKey.stream().forEach((pathUrl) -&gt; {</span>
+<span class="fc" id="L55">            ChangedEndpoint changedEndpoint = new ChangedEndpoint();</span>
+<span class="fc" id="L56">            changedEndpoint.setPathUrl(pathUrl);</span>
+<span class="fc" id="L57">            Path oldPath = oldPaths.get(pathUrl);</span>
+<span class="fc" id="L58">            Path newPath = newPaths.get(pathUrl);</span>
+
+            // Diff Operation
+<span class="fc" id="L61">            Map&lt;HttpMethod, Operation&gt; oldOperationMap = oldPath.getOperationMap();</span>
+<span class="fc" id="L62">            Map&lt;HttpMethod, Operation&gt; newOperationMap = newPath.getOperationMap();</span>
+<span class="fc" id="L63">            MapKeyDiff&lt;HttpMethod, Operation&gt; operationDiff = MapKeyDiff.diff(oldOperationMap, newOperationMap);</span>
+<span class="fc" id="L64">            Map&lt;HttpMethod, Operation&gt; increasedOperation = operationDiff.getIncreased();</span>
+<span class="fc" id="L65">            Map&lt;HttpMethod, Operation&gt; missingOperation = operationDiff.getMissing();</span>
+<span class="fc" id="L66">            changedEndpoint.setNewOperations(increasedOperation);</span>
+<span class="fc" id="L67">            changedEndpoint.setMissingOperations(missingOperation);</span>
+
+<span class="fc" id="L69">            List&lt;HttpMethod&gt; sharedMethods = operationDiff.getSharedKey();</span>
+<span class="fc" id="L70">            Map&lt;HttpMethod, ChangedOperation&gt; operas = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L71">            sharedMethods.stream().forEach((method) -&gt; {</span>
+<span class="fc" id="L72">                ChangedOperation changedOperation = new ChangedOperation();</span>
+<span class="fc" id="L73">                Operation oldOperation = oldOperationMap.get(method);</span>
+<span class="fc" id="L74">                Operation newOperation = newOperationMap.get(method);</span>
+<span class="fc" id="L75">                changedOperation.setSummary(newOperation.getSummary());</span>
+
+                // Diff Parameter
+<span class="fc" id="L78">                List&lt;Parameter&gt; oldParameters = oldOperation.getParameters();</span>
+<span class="fc" id="L79">                List&lt;Parameter&gt; newParameters = newOperation.getParameters();</span>
+<span class="fc" id="L80">                ParameterDiff parameterDiff = ParameterDiff</span>
+<span class="fc" id="L81">                        .buildWithDefinition(oldSpec.getDefinitions(), newSpec.getDefinitions())</span>
+<span class="fc" id="L82">                        .diff(oldParameters, newParameters);</span>
+<span class="fc" id="L83">                changedOperation.setAddParameters(parameterDiff.getIncreased());</span>
+<span class="fc" id="L84">                changedOperation.setMissingParameters(parameterDiff.getMissing());</span>
+<span class="fc" id="L85">                changedOperation.setChangedParameter(parameterDiff.getChanged());</span>
+
+                // Diff response
+<span class="fc" id="L88">                Property oldResponseProperty = getResponseProperty(oldOperation);</span>
+<span class="fc" id="L89">                Property newResponseProperty = getResponseProperty(newOperation);</span>
+<span class="fc" id="L90">                PropertyDiff propertyDiff = PropertyDiff.buildWithDefinition(oldSpec.getDefinitions(),</span>
+<span class="fc" id="L91">                        newSpec.getDefinitions());</span>
+<span class="fc" id="L92">                propertyDiff.diff(oldResponseProperty, newResponseProperty);</span>
+<span class="fc" id="L93">                changedOperation.setAddProps(propertyDiff.getIncreased());</span>
+<span class="fc" id="L94">                changedOperation.setMissingProps(propertyDiff.getMissing());</span>
+<span class="fc" id="L95">                changedOperation.setChangedProps(propertyDiff.getChanged());</span>
+
+                // Diff Consumes
+<span class="fc" id="L98">                ListDiff&lt;String&gt; consumeDiff = getMediaTypeDiff(oldOperation.getConsumes(), newOperation.getConsumes());</span>
+<span class="fc" id="L99">                changedOperation.setAddConsumes(consumeDiff.getIncreased());</span>
+<span class="fc" id="L100">                changedOperation.setMissingConsumes(consumeDiff.getMissing());</span>
+
+                // Diff Produces
+<span class="fc" id="L103">                ListDiff&lt;String&gt; producesDiff = getMediaTypeDiff(oldOperation.getProduces(),</span>
+<span class="fc" id="L104">                        newOperation.getProduces());</span>
+<span class="fc" id="L105">                changedOperation.setAddProduces(producesDiff.getIncreased());</span>
+<span class="fc" id="L106">                changedOperation.setMissingProduces(producesDiff.getMissing());</span>
+
+<span class="fc bfc" id="L108" title="All 2 branches covered.">                if (changedOperation.isDiff()) {</span>
+<span class="fc" id="L109">                    operas.put(method, changedOperation);</span>
+                }
+<span class="fc" id="L111">            });</span>
+<span class="fc" id="L112">            changedEndpoint.setChangedOperations(operas);</span>
+
+<span class="fc" id="L114">            instance.newEndpoints</span>
+<span class="fc" id="L115">                    .addAll(convert2EndpointList(changedEndpoint.getPathUrl(), changedEndpoint.getNewOperations()));</span>
+<span class="fc" id="L116">            instance.missingEndpoints</span>
+<span class="fc" id="L117">                    .addAll(convert2EndpointList(changedEndpoint.getPathUrl(), changedEndpoint.getMissingOperations()));</span>
+
+<span class="fc bfc" id="L119" title="All 2 branches covered.">            if (changedEndpoint.isDiff()) {</span>
+<span class="fc" id="L120">                instance.changedEndpoints.add(changedEndpoint);</span>
+            }
+<span class="fc" id="L122">        });</span>
+
+<span class="fc" id="L124">        return instance;</span>
+
+    }
+
+	private static Map&lt;String, Path&gt; getPathsWithBasePath(Swagger spec) {
+<span class="fc" id="L129">		return spec.getPaths()</span>
+<span class="fc" id="L130">				.entrySet()</span>
+<span class="fc" id="L131">				.stream()</span>
+<span class="fc" id="L132">				.collect(toMap(entry -&gt; spec.getBasePath() + entry.getKey(), //keyMapper</span>
+                                Entry::getValue, //valueMapper
+                                (u, v) -&gt; {
+<span class="nc" id="L135">				                    throw new IllegalStateException(String.format(&quot;Duplicate key %s&quot;, u));</span>
+                                }, //mergeFunction
+                                LinkedHashMap::new));  //mapSupplier
+	}
+
+    private static Property getResponseProperty(Operation operation) {
+<span class="fc" id="L141">        Map&lt;String, Response&gt; responses = operation.getResponses();</span>
+        // temporary workaround for missing response messages
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">        if (responses == null) return null;</span>
+<span class="fc" id="L144">        Response response = responses.get(&quot;200&quot;);</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">        return null == response ? null : new PropertyModelConverter().modelToProperty(response.getResponseSchema());</span>
+    }
+
+    private static List&lt;Endpoint&gt; convert2EndpointList(Map&lt;String, Path&gt; map) {
+<span class="fc" id="L149">        List&lt;Endpoint&gt; endpoints = new ArrayList&lt;Endpoint&gt;();</span>
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">        if (null == map) return endpoints;</span>
+<span class="fc" id="L151">        map.forEach((url, path) -&gt; {</span>
+<span class="fc" id="L152">            Map&lt;HttpMethod, Operation&gt; operationMap = path.getOperationMap();</span>
+<span class="fc" id="L153">            operationMap.forEach((httpMethod, operation) -&gt; {</span>
+<span class="fc" id="L154">                Endpoint endpoint = new Endpoint();</span>
+<span class="fc" id="L155">                endpoint.setPathUrl(url);</span>
+<span class="fc" id="L156">                endpoint.setMethod(httpMethod);</span>
+<span class="fc" id="L157">                endpoint.setSummary(operation.getSummary());</span>
+<span class="fc" id="L158">                endpoint.setPath(path);</span>
+<span class="fc" id="L159">                endpoint.setOperation(operation);</span>
+<span class="fc" id="L160">                endpoints.add(endpoint);</span>
+<span class="fc" id="L161">            });</span>
+<span class="fc" id="L162">        });</span>
+<span class="fc" id="L163">        return endpoints;</span>
+    }
+
+    private static Collection&lt;? extends Endpoint&gt; convert2EndpointList(String pathUrl, Map&lt;HttpMethod, Operation&gt; map) {
+<span class="fc" id="L167">        List&lt;Endpoint&gt; endpoints = new ArrayList&lt;Endpoint&gt;();</span>
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">        if (null == map) return endpoints;</span>
+<span class="fc" id="L169">        map.forEach((httpMethod, operation) -&gt; {</span>
+<span class="fc" id="L170">            Endpoint endpoint = new Endpoint();</span>
+<span class="fc" id="L171">            endpoint.setPathUrl(pathUrl);</span>
+<span class="fc" id="L172">            endpoint.setMethod(httpMethod);</span>
+<span class="fc" id="L173">            endpoint.setSummary(operation.getSummary());</span>
+<span class="fc" id="L174">            endpoint.setOperation(operation);</span>
+<span class="fc" id="L175">            endpoints.add(endpoint);</span>
+<span class="fc" id="L176">        });</span>
+<span class="fc" id="L177">        return endpoints;</span>
+    }
+
+    private static ListDiff&lt;String&gt; getMediaTypeDiff(List&lt;String&gt; oldTypes, List&lt;String&gt; newTypes) {
+<span class="fc" id="L181">        return ListDiff.diff(oldTypes, newTypes, (t, sample) -&gt; {</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">            for (String mediaType : t) {</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">                if (sample.equalsIgnoreCase(mediaType)) { return mediaType; }</span>
+<span class="fc" id="L184">            }</span>
+<span class="fc" id="L185">            return null;</span>
+        });
+    }
+
+    public List&lt;Endpoint&gt; getNewEndpoints() {
+<span class="fc" id="L190">        return newEndpoints;</span>
+    }
+
+    public List&lt;Endpoint&gt; getMissingEndpoints() {
+<span class="fc" id="L194">        return missingEndpoints;</span>
+    }
+
+    public List&lt;ChangedEndpoint&gt; getChangedEndpoints() {
+<span class="fc" id="L198">        return changedEndpoints;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

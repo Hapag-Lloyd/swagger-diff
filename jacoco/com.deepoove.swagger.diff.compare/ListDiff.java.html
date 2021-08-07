@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ListDiff.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">swagger-diff</a> &gt; <a href="index.source.html" class="el_package">com.deepoove.swagger.diff.compare</a> &gt; <span class="el_source">ListDiff.java</span></div><h1>ListDiff.java</h1><pre class="source lang-java linenums">package com.deepoove.swagger.diff.compare;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
+
+/**
+ * compare two Lists
+ *
+ * @author Sayi
+ */
+public class ListDiff&lt;K&gt; {
+
+    private List&lt;K&gt; increased;
+    private List&lt;K&gt; missing;
+    private Map&lt;K, K&gt; shared;
+
+<span class="fc" id="L20">    private ListDiff() {</span>
+<span class="fc" id="L21">        this.shared = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L22">    }</span>
+
+    public static &lt;K&gt; ListDiff&lt;K&gt; diff(List&lt;K&gt; left, List&lt;K&gt; right) {
+<span class="nc" id="L25">        return diff(left, right, (t, u) -&gt; u);</span>
+    }
+
+    /**
+     * Compares two lists
+     *
+     * @param &lt;K&gt; the list key type
+     * @param left the left list
+     * @param right the right list
+     * @param biFunc
+     *            if right List contains left element
+     * @return the list differences
+     */
+    public static &lt;K&gt; ListDiff&lt;K&gt; diff(List&lt;K&gt; left, List&lt;K&gt; right, BiFunction&lt;List&lt;K&gt;, K, K&gt; biFunc) {
+<span class="fc" id="L39">        ListDiff&lt;K&gt; instance = new ListDiff&lt;&gt;();</span>
+<span class="pc bpc" id="L40" title="1 of 4 branches missed.">        if (null == left &amp;&amp; null == right) return instance;</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">        if (null == left) {</span>
+<span class="nc" id="L42">            instance.increased = right;</span>
+<span class="nc" id="L43">            return instance;</span>
+        }
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">        if (null == right) {</span>
+<span class="nc" id="L46">            instance.missing = left;</span>
+<span class="nc" id="L47">            return instance;</span>
+        }
+
+<span class="fc" id="L50">        instance.increased = new ArrayList&lt;&gt;(right);</span>
+<span class="fc" id="L51">        instance.missing = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        for (K ele : left) {</span>
+<span class="fc" id="L53">            K rightEle = biFunc.apply(right, ele);</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">            if (null != rightEle) {</span>
+<span class="fc" id="L55">                instance.increased.remove(rightEle);</span>
+<span class="fc" id="L56">                instance.shared.put(ele, rightEle);</span>
+            } else {
+<span class="fc" id="L58">                instance.missing.add(ele);</span>
+            }
+<span class="fc" id="L60">        }</span>
+<span class="fc" id="L61">        return instance;</span>
+    }
+
+    public List&lt;K&gt; getIncreased() {
+<span class="fc" id="L65">        return increased;</span>
+    }
+
+    public List&lt;K&gt; getMissing() {
+<span class="fc" id="L69">        return missing;</span>
+    }
+
+    public Map&lt;K, K&gt; getShared() {
+<span class="fc" id="L73">        return shared;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

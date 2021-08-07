@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HtmlRender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">swagger-diff</a> &gt; <a href="index.source.html" class="el_package">com.deepoove.swagger.diff.output</a> &gt; <span class="el_source">HtmlRender.java</span></div><h1>HtmlRender.java</h1><pre class="source lang-java linenums">package com.deepoove.swagger.diff.output;
+
+import com.deepoove.swagger.diff.SwaggerDiff;
+import com.deepoove.swagger.diff.model.*;
+import io.swagger.models.HttpMethod;
+import io.swagger.models.parameters.Parameter;
+import io.swagger.models.properties.Property;
+import j2html.tags.ContainerTag;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static j2html.TagCreator.*;
+
+public class HtmlRender implements Render {
+
+    private String title;
+    private String linkCss;
+
+    public HtmlRender() {
+<span class="nc" id="L23">        this(&quot;Api Change Log&quot;, &quot;http://deepoove.com/swagger-diff/stylesheets/demo.css&quot;);</span>
+<span class="nc" id="L24">    }</span>
+
+<span class="fc" id="L26">    public HtmlRender(String title, String linkCss) {</span>
+<span class="fc" id="L27">        this.title = title;</span>
+<span class="fc" id="L28">        this.linkCss = linkCss;</span>
+<span class="fc" id="L29">    }</span>
+
+
+    public String render(SwaggerDiff diff) {
+<span class="fc" id="L33">        List&lt;Endpoint&gt; newEndpoints = diff.getNewEndpoints();</span>
+<span class="fc" id="L34">        ContainerTag ol_newEndpoint = ol_newEndpoint(newEndpoints);</span>
+
+<span class="fc" id="L36">        List&lt;Endpoint&gt; missingEndpoints = diff.getMissingEndpoints();</span>
+<span class="fc" id="L37">        ContainerTag ol_missingEndpoint = ol_missingEndpoint(missingEndpoints);</span>
+
+<span class="fc" id="L39">        List&lt;ChangedEndpoint&gt; changedEndpoints = diff.getChangedEndpoints();</span>
+<span class="fc" id="L40">        ContainerTag ol_changed = ol_changed(changedEndpoints);</span>
+
+<span class="fc" id="L42">        ContainerTag p_versions = p_versions(diff.getOldVersion(), diff.getNewVersion());</span>
+
+<span class="fc" id="L44">        return renderHtml(ol_newEndpoint, ol_missingEndpoint, ol_changed, p_versions);</span>
+    }
+
+    public String renderHtml(ContainerTag ol_new, ContainerTag ol_miss, ContainerTag ol_changed, ContainerTag p_versions) {
+<span class="fc" id="L48">        ContainerTag html = html().attr(&quot;lang&quot;, &quot;en&quot;).with(</span>
+<span class="fc" id="L49">            head().with(</span>
+<span class="fc" id="L50">                meta().withCharset(&quot;utf-8&quot;),</span>
+<span class="fc" id="L51">                title(title),</span>
+<span class="fc" id="L52">                script(rawHtml(&quot;function showHide(id){if(document.getElementById(id).style.display==\'none\'){document.getElementById(id).style.display=\'block\';document.getElementById(\'btn_\'+id).innerHTML=\'&amp;uArr;\';}else{document.getElementById(id).style.display=\'none\';document.getElementById(\'btn_\'+id).innerHTML=\'&amp;dArr;\';}return true;}&quot;)).withType(&quot;text/javascript&quot;),</span>
+<span class="fc" id="L53">                link().withRel(&quot;stylesheet&quot;).withHref(linkCss)</span>
+            ),
+<span class="fc" id="L55">            body().with(</span>
+<span class="fc" id="L56">                header().with(h1(title)),</span>
+<span class="fc" id="L57">                div().withClass(&quot;article&quot;).with(</span>
+<span class="fc" id="L58">                    div_headArticle(&quot;Versions&quot;, &quot;versions&quot;, p_versions),</span>
+<span class="fc" id="L59">                    div_headArticle(&quot;What's New&quot;, &quot;new&quot;, ol_new),</span>
+<span class="fc" id="L60">                    div_headArticle(&quot;What's Deprecated&quot;, &quot;deprecated&quot;, ol_miss),</span>
+<span class="fc" id="L61">                    div_headArticle(&quot;What's Changed&quot;, &quot;changed&quot;, ol_changed)</span>
+                )
+            )
+        );
+
+<span class="fc" id="L66">        return document().render() + html.render();</span>
+    }
+
+    private ContainerTag div_headArticle(final String title, final String type, final ContainerTag ol) {
+<span class="fc" id="L70">        return div().with(h2(title).with(a(rawHtml(&quot;&amp;uArr;&quot;)).withId(&quot;btn_&quot; + type).withClass(&quot;showhide&quot;).withHref(&quot;#&quot;).attr(&quot;onClick&quot;, &quot;javascript:showHide('&quot; + type + &quot;');&quot;)), hr(), ol);</span>
+    }
+
+    private ContainerTag p_versions(String oldVersion, String newVersion) {
+<span class="fc" id="L74">        ContainerTag p = p().withId(&quot;versions&quot;);</span>
+<span class="fc" id="L75">        p.withText(&quot;Changes from &quot; + oldVersion + &quot; to &quot; + newVersion + &quot;.&quot;);</span>
+<span class="fc" id="L76">        return p;</span>
+    }
+
+    private ContainerTag ol_newEndpoint(List&lt;Endpoint&gt; endpoints) {
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (null == endpoints) return ol().withId(&quot;new&quot;);</span>
+<span class="fc" id="L81">        ContainerTag ol = ol().withId(&quot;new&quot;);</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        for (Endpoint endpoint : endpoints) {</span>
+<span class="fc" id="L83">            ol.with(li_newEndpoint(endpoint.getMethod().toString(),</span>
+<span class="fc" id="L84">                endpoint.getPathUrl(), endpoint.getSummary()));</span>
+<span class="fc" id="L85">        }</span>
+<span class="fc" id="L86">        return ol;</span>
+    }
+
+    private ContainerTag li_newEndpoint(String method, String path,
+                                        String desc) {
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">        return li().with(span(method).withClass(method)).withText(path + &quot; &quot;)</span>
+<span class="fc" id="L92">            .with(span(null == desc ? &quot;&quot; : desc));</span>
+    }
+
+    private ContainerTag ol_missingEndpoint(List&lt;Endpoint&gt; endpoints) {
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        if (null == endpoints) return ol().withId(&quot;deprecated&quot;);</span>
+<span class="fc" id="L97">        ContainerTag ol = ol().withId(&quot;deprecated&quot;);</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        for (Endpoint endpoint : endpoints) {</span>
+<span class="fc" id="L99">            ol.with(li_missingEndpoint(endpoint.getMethod().toString(),</span>
+<span class="fc" id="L100">                endpoint.getPathUrl(), endpoint.getSummary()));</span>
+<span class="fc" id="L101">        }</span>
+<span class="fc" id="L102">        return ol;</span>
+    }
+
+    private ContainerTag li_missingEndpoint(String method, String path,
+                                            String desc) {
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">        return li().with(span(method).withClass(method),</span>
+<span class="fc" id="L108">            del().withText(path)).with(span(null == desc ? &quot;&quot; : &quot; &quot; + desc));</span>
+    }
+
+    private ContainerTag ol_changed(List&lt;ChangedEndpoint&gt; changedEndpoints) {
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        if (null == changedEndpoints) return ol().withId(&quot;changed&quot;);</span>
+<span class="fc" id="L113">        ContainerTag ol = ol().withId(&quot;changed&quot;);</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        for (ChangedEndpoint changedEndpoint : changedEndpoints) {</span>
+<span class="fc" id="L115">            String pathUrl = changedEndpoint.getPathUrl();</span>
+<span class="fc" id="L116">            Map&lt;HttpMethod, ChangedOperation&gt; changedOperations = changedEndpoint.getChangedOperations();</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">            for (Entry&lt;HttpMethod, ChangedOperation&gt; entry : changedOperations.entrySet()) {</span>
+<span class="fc" id="L118">                String method = entry.getKey().toString();</span>
+<span class="fc" id="L119">                ChangedOperation changedOperation = entry.getValue();</span>
+<span class="fc" id="L120">                String desc = changedOperation.getSummary();</span>
+
+<span class="fc" id="L122">                ContainerTag ul_detail = ul().withClass(&quot;detail&quot;);</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">                if (changedOperation.isDiffParam()) {</span>
+<span class="fc" id="L124">                    ul_detail.with(li().with(h3(&quot;Parameter&quot;)).with(ul_param(changedOperation)));</span>
+                }
+<span class="fc bfc" id="L126" title="All 2 branches covered.">                if (changedOperation.isDiffProp()) {</span>
+<span class="fc" id="L127">                    ul_detail.with(li().with(h3(&quot;Return Type&quot;)).with(ul_response(changedOperation)));</span>
+                }
+<span class="fc bfc" id="L129" title="All 2 branches covered.">                if (changedOperation.isDiffProduces()) {</span>
+<span class="fc" id="L130">                    ul_detail.with(li().with(h3(&quot;Produces&quot;)).with(ul_produce(changedOperation)));</span>
+                }
+<span class="fc bfc" id="L132" title="All 2 branches covered.">                if (changedOperation.isDiffConsumes()) {</span>
+<span class="fc" id="L133">                    ul_detail.with(li().with(h3(&quot;Consumes&quot;)).with(ul_consume(changedOperation)));</span>
+                }
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">                ol.with(li().with(span(method).withClass(method)).withText(pathUrl + &quot; &quot;).with(span(null == desc ? &quot;&quot; : desc))</span>
+<span class="fc" id="L136">                    .with(ul_detail));</span>
+<span class="fc" id="L137">            }</span>
+<span class="fc" id="L138">        }</span>
+<span class="fc" id="L139">        return ol;</span>
+    }
+
+    private ContainerTag ul_response(ChangedOperation changedOperation) {
+<span class="fc" id="L143">        List&lt;ElProperty&gt; addProps = changedOperation.getAddProps();</span>
+<span class="fc" id="L144">        List&lt;ElProperty&gt; delProps = changedOperation.getMissingProps();</span>
+<span class="fc" id="L145">        List&lt;ElProperty&gt; chgProps = changedOperation.getChangedProps();</span>
+<span class="fc" id="L146">        ContainerTag ul = ul().withClass(&quot;change response&quot;);</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">        for (ElProperty prop : addProps) {</span>
+<span class="fc" id="L148">            ul.with(li_addProp(prop));</span>
+<span class="fc" id="L149">        }</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        for (ElProperty prop : delProps) {</span>
+<span class="fc" id="L151">            ul.with(li_missingProp(prop));</span>
+<span class="fc" id="L152">        }</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        for (ElProperty prop : chgProps) {</span>
+<span class="fc" id="L154">            ul.with(li_changedProp(prop));</span>
+<span class="fc" id="L155">        }</span>
+<span class="fc" id="L156">        return ul;</span>
+    }
+
+    private ContainerTag li_missingProp(ElProperty prop) {
+<span class="fc" id="L160">        Property property = prop.getProperty();</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">        return li().withClass(&quot;missing&quot;).withText(&quot;Delete&quot;).with(del(prop.getEl())).with(span(null == property.getDescription() ? &quot;&quot; : (&quot;//&quot; + property.getDescription())).withClass(&quot;comment&quot;));</span>
+    }
+
+    private ContainerTag li_addProp(ElProperty prop) {
+<span class="fc" id="L165">        Property property = prop.getProperty();</span>
+<span class="fc bfc" id="L166" title="All 2 branches covered.">        return li().withText(&quot;Add &quot; + prop.getEl()).with(span(null == property.getDescription() ? &quot;&quot; : (&quot;//&quot; + property.getDescription())).withClass(&quot;comment&quot;));</span>
+    }
+
+    private ContainerTag li_changedProp(ElProperty prop) {
+<span class="fc" id="L170">        List&lt;String&gt; changeDetails = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L171">        String changeDetailsHeading = &quot;&quot;;</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">        if (prop.isTypeChange()) {</span>
+<span class="fc" id="L173">            changeDetails.add(&quot;Data Type&quot;);</span>
+        }
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        if (prop.isNewEnums()) {</span>
+<span class="fc" id="L176">            changeDetails.add(&quot;Added Enum&quot;);</span>
+        }
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        if (prop.isRemovedEnums()) {</span>
+<span class="fc" id="L179">            changeDetails.add(&quot;Removed Enum&quot;);</span>
+        }
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        if (! changeDetails.isEmpty()) {</span>
+<span class="fc" id="L182">            changeDetailsHeading = &quot; (&quot; + String.join(&quot;, &quot;, changeDetails) + &quot;)&quot;;</span>
+        }
+<span class="fc" id="L184">        return li().withText(&quot;Change &quot; + prop.getEl()).with(span(changeDetailsHeading).withClass(&quot;comment&quot;));</span>
+    }
+
+    private ContainerTag ul_param(ChangedOperation changedOperation) {
+<span class="fc" id="L188">        List&lt;Parameter&gt; addParameters = changedOperation.getAddParameters();</span>
+<span class="fc" id="L189">        List&lt;Parameter&gt; delParameters = changedOperation.getMissingParameters();</span>
+<span class="fc" id="L190">        List&lt;ChangedParameter&gt; changedParameters = changedOperation.getChangedParameter();</span>
+<span class="fc" id="L191">        ContainerTag ul = ul().withClass(&quot;change param&quot;);</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        for (Parameter param : addParameters) {</span>
+<span class="fc" id="L193">            ul.with(li_addParam(param));</span>
+<span class="fc" id="L194">        }</span>
+<span class="fc bfc" id="L195" title="All 2 branches covered.">        for (ChangedParameter param : changedParameters) {</span>
+<span class="fc" id="L196">            List&lt;ElProperty&gt; increased = param.getIncreased();</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">            for (ElProperty prop : increased) {</span>
+<span class="fc" id="L198">                ul.with(li_addProp(prop));</span>
+<span class="fc" id="L199">            }</span>
+<span class="fc" id="L200">        }</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">        for (ChangedParameter param : changedParameters) {</span>
+<span class="fc" id="L202">            boolean changeRequired = param.isChangeRequired();</span>
+<span class="fc" id="L203">            boolean changeDescription = param.isChangeDescription();</span>
+<span class="fc bfc" id="L204" title="All 4 branches covered.">            if (changeRequired || changeDescription)</span>
+<span class="fc" id="L205">                ul.with(li_changedParam(param));</span>
+<span class="fc" id="L206">        }</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">        for (ChangedParameter param : changedParameters) {</span>
+<span class="fc" id="L208">            List&lt;ElProperty&gt; missing = param.getMissing();</span>
+<span class="fc bfc" id="L209" title="All 2 branches covered.">            for (ElProperty prop : missing) {</span>
+<span class="fc" id="L210">                ul.with(li_missingProp(prop));</span>
+<span class="fc" id="L211">            }</span>
+<span class="fc" id="L212">        }</span>
+<span class="fc bfc" id="L213" title="All 2 branches covered.">        for (ChangedParameter param : changedParameters) {</span>
+<span class="fc" id="L214">            List&lt;ElProperty&gt; changed = param.getChanged();</span>
+<span class="fc bfc" id="L215" title="All 2 branches covered.">            for (ElProperty prop : changed) {</span>
+<span class="fc" id="L216">                ul.with(li_changedProp(prop));</span>
+<span class="fc" id="L217">            }</span>
+<span class="fc" id="L218">        }</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">        for (Parameter param : delParameters) {</span>
+<span class="fc" id="L220">            ul.with(li_missingParam(param));</span>
+<span class="fc" id="L221">        }</span>
+<span class="fc" id="L222">        return ul;</span>
+    }
+
+    private ContainerTag li_addParam(Parameter param) {
+<span class="fc bfc" id="L226" title="All 2 branches covered.">        return li().withText(&quot;Add &quot; + param.getName()).with(span(null == param.getDescription() ? &quot;&quot; : (&quot;//&quot; + param.getDescription())).withClass(&quot;comment&quot;));</span>
+    }
+
+    private ContainerTag li_missingParam(Parameter param) {
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">        return li().withClass(&quot;missing&quot;).with(span(&quot;Delete&quot;)).with(del(param.getName())).with(span(null == param.getDescription() ? &quot;&quot; : (&quot;//&quot; + param.getDescription())).withClass(&quot;comment&quot;));</span>
+    }
+
+    private ContainerTag li_changedParam(ChangedParameter changeParam) {
+<span class="fc" id="L234">        boolean changeRequired = changeParam.isChangeRequired();</span>
+<span class="fc" id="L235">        boolean changeDescription = changeParam.isChangeDescription();</span>
+<span class="fc" id="L236">        Parameter rightParam = changeParam.getRightParameter();</span>
+<span class="fc" id="L237">        Parameter leftParam = changeParam.getLeftParameter();</span>
+<span class="fc" id="L238">        ContainerTag li = li().withText(rightParam.getName());</span>
+<span class="fc bfc" id="L239" title="All 2 branches covered.">        if (changeRequired) {</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">            li.withText(&quot; change into &quot; + (rightParam.getRequired() ? &quot;required&quot; : &quot;not required&quot;));</span>
+        }
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">        if (changeDescription) {</span>
+<span class="pc bpc" id="L243" title="1 of 2 branches missed.">            li.withText(&quot; Notes &quot;).with(del(leftParam.getDescription()).withClass(&quot;comment&quot;)).withText(&quot; change into &quot;).with(span(span(null == rightParam.getDescription() ? &quot;&quot; : rightParam.getDescription()).withClass(&quot;comment&quot;)));</span>
+        }
+<span class="fc" id="L245">        return li;</span>
+    }
+
+    private ContainerTag ul_produce(ChangedOperation changedOperation) {
+<span class="fc" id="L249">        List&lt;String&gt; addProduce = changedOperation.getAddProduces();</span>
+<span class="fc" id="L250">        List&lt;String&gt; delProduce = changedOperation.getMissingProduces();</span>
+<span class="fc" id="L251">        ContainerTag ul = ul().withClass(&quot;change produces&quot;);</span>
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        for (String mt : addProduce) {</span>
+<span class="nc" id="L253">            ul.with(li_addMediaType(mt));</span>
+<span class="nc" id="L254">        }</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">        for (String mt : delProduce) {</span>
+<span class="fc" id="L256">            ul.with(li_missingMediaType(mt));</span>
+<span class="fc" id="L257">        }</span>
+<span class="fc" id="L258">        return ul;</span>
+    }
+
+    private ContainerTag ul_consume(ChangedOperation changedOperation) {
+<span class="fc" id="L262">        List&lt;String&gt; addConsume = changedOperation.getAddConsumes();</span>
+<span class="fc" id="L263">        List&lt;String&gt; delConsume = changedOperation.getMissingConsumes();</span>
+<span class="fc" id="L264">        ContainerTag ul = ul().withClass(&quot;change consumes&quot;);</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">        for (String mt : addConsume) {</span>
+<span class="fc" id="L266">            ul.with(li_addMediaType(mt));</span>
+<span class="fc" id="L267">        }</span>
+<span class="fc bfc" id="L268" title="All 2 branches covered.">        for (String mt : delConsume) {</span>
+<span class="fc" id="L269">            ul.with(li_missingMediaType(mt));</span>
+<span class="fc" id="L270">        }</span>
+<span class="fc" id="L271">        return ul;</span>
+    }
+
+    private ContainerTag li_missingMediaType(String type) {
+<span class="fc" id="L275">        return li().withClass(&quot;missing&quot;).withText(&quot;Delete&quot;).with(del(type)).with(span(&quot;&quot;));</span>
+    }
+
+    private ContainerTag li_addMediaType(String type) {
+<span class="fc" id="L279">        return li().withText(&quot;Add &quot; + type).with(span(&quot;&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChangedOperation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">swagger-diff</a> &gt; <a href="index.source.html" class="el_package">com.deepoove.swagger.diff.model</a> &gt; <span class="el_source">ChangedOperation.java</span></div><h1>ChangedOperation.java</h1><pre class="source lang-java linenums">package com.deepoove.swagger.diff.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import io.swagger.models.parameters.Parameter;
+
+<span class="fc" id="L8">public class ChangedOperation implements Changed {</span>
+
+    private String summary;
+
+<span class="fc" id="L12">    private List&lt;Parameter&gt; addParameters = new ArrayList&lt;Parameter&gt;();</span>
+<span class="fc" id="L13">    private List&lt;Parameter&gt; missingParameters = new ArrayList&lt;Parameter&gt;();</span>
+
+<span class="fc" id="L15">    private List&lt;ChangedParameter&gt; changedParameter = new ArrayList&lt;ChangedParameter&gt;();</span>
+
+<span class="fc" id="L17">    private List&lt;ElProperty&gt; addProps = new ArrayList&lt;ElProperty&gt;();</span>
+<span class="fc" id="L18">    private List&lt;ElProperty&gt; missingProps = new ArrayList&lt;ElProperty&gt;();</span>
+<span class="fc" id="L19">    private List&lt;ElProperty&gt; changedProps = new ArrayList&lt;ElProperty&gt;();</span>
+<span class="fc" id="L20">    private List&lt;String&gt; addConsumes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L21">    private List&lt;String&gt; missingConsumes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L22">    private List&lt;String&gt; addProduces = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L23">    private List&lt;String&gt; missingProduces = new ArrayList&lt;&gt;();</span>
+
+    public List&lt;Parameter&gt; getAddParameters() {
+<span class="fc" id="L26">        return addParameters;</span>
+    }
+
+    public void setAddParameters(List&lt;Parameter&gt; addParameters) {
+<span class="fc" id="L30">        this.addParameters = addParameters;</span>
+<span class="fc" id="L31">    }</span>
+
+    public List&lt;Parameter&gt; getMissingParameters() {
+<span class="fc" id="L34">        return missingParameters;</span>
+    }
+
+    public void setMissingParameters(List&lt;Parameter&gt; missingParameters) {
+<span class="fc" id="L38">        this.missingParameters = missingParameters;</span>
+<span class="fc" id="L39">    }</span>
+
+    public List&lt;ChangedParameter&gt; getChangedParameter() {
+<span class="fc" id="L42">        return changedParameter;</span>
+    }
+
+    public void setChangedParameter(List&lt;ChangedParameter&gt; changedParameter) {
+<span class="fc" id="L46">        this.changedParameter = changedParameter;</span>
+<span class="fc" id="L47">    }</span>
+
+    public List&lt;ElProperty&gt; getAddProps() {
+<span class="fc" id="L50">        return addProps;</span>
+    }
+
+    public void setAddProps(List&lt;ElProperty&gt; addProps) {
+<span class="fc" id="L54">        this.addProps = addProps;</span>
+<span class="fc" id="L55">    }</span>
+
+    public List&lt;ElProperty&gt; getMissingProps() {
+<span class="fc" id="L58">        return missingProps;</span>
+    }
+
+    public void setMissingProps(List&lt;ElProperty&gt; missingProps) {
+<span class="fc" id="L62">        this.missingProps = missingProps;</span>
+<span class="fc" id="L63">    }</span>
+
+    public List&lt;ElProperty&gt; getChangedProps() {
+<span class="fc" id="L66">        return changedProps;</span>
+    }
+
+    public void setChangedProps(List&lt;ElProperty&gt; changedProps) {
+<span class="fc" id="L70">        this.changedProps = changedProps;</span>
+<span class="fc" id="L71">    }</span>
+
+    public String getSummary() {
+<span class="fc" id="L74">        return summary;</span>
+    }
+
+    public void setSummary(String summary) {
+<span class="fc" id="L78">        this.summary = summary;</span>
+<span class="fc" id="L79">    }</span>
+
+    public boolean isDiff() {
+<span class="fc bfc" id="L82" title="All 8 branches covered.">        return !addParameters.isEmpty() || !missingParameters.isEmpty() || !changedParameter.isEmpty() || isDiffProp()</span>
+<span class="pc bpc" id="L83" title="2 of 4 branches missed.">                || isDiffConsumes() || isDiffProduces();</span>
+    }
+
+    public boolean isDiffProp() {
+<span class="pc bpc" id="L87" title="1 of 6 branches missed.">        return !addProps.isEmpty() || !missingProps.isEmpty() || !changedProps.isEmpty();</span>
+    }
+
+    public boolean isDiffParam() {
+<span class="fc bfc" id="L91" title="All 6 branches covered.">        return !addParameters.isEmpty() || !missingParameters.isEmpty() || !changedParameter.isEmpty();</span>
+    }
+
+    public boolean isDiffConsumes() {
+<span class="pc bpc" id="L95" title="1 of 4 branches missed.">        return !addConsumes.isEmpty() || !missingConsumes.isEmpty();</span>
+    }
+
+    public boolean isDiffProduces() {
+<span class="pc bpc" id="L99" title="1 of 4 branches missed.">        return !addProduces.isEmpty() || !missingProduces.isEmpty();</span>
+    }
+
+    public List&lt;String&gt; getAddConsumes() {
+<span class="fc" id="L103">        return this.addConsumes;</span>
+    }
+
+    public void setAddConsumes(List&lt;String&gt; increased) {
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        this.addConsumes = increased == null ? new ArrayList&lt;&gt;() : increased;</span>
+<span class="fc" id="L108">    }</span>
+
+    public List&lt;String&gt; getMissingConsumes() {
+<span class="fc" id="L111">        return this.missingConsumes;</span>
+    }
+
+    public void setMissingConsumes(List&lt;String&gt; missing) {
+<span class="fc bfc" id="L115" title="All 2 branches covered.">        this.missingConsumes = missing == null ? new ArrayList&lt;&gt;() : missing;</span>
+<span class="fc" id="L116">    }</span>
+
+    public List&lt;String&gt; getAddProduces() {
+<span class="fc" id="L119">        return this.addProduces;</span>
+    }
+
+    public void setAddProduces(List&lt;String&gt; increased) {
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">        this.addProduces = increased == null ? new ArrayList&lt;&gt;() : increased;</span>
+<span class="fc" id="L124">    }</span>
+
+    public List&lt;String&gt; getMissingProduces() {
+<span class="fc" id="L127">        return this.missingProduces;</span>
+    }
+
+    public void setMissingProduces(List&lt;String&gt; missing) {
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        this.missingProduces = missing == null ? new ArrayList&lt;&gt;() : missing;</span>
+<span class="fc" id="L132">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

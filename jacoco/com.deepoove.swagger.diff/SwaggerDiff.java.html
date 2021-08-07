@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SwaggerDiff.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">swagger-diff</a> &gt; <a href="index.source.html" class="el_package">com.deepoove.swagger.diff</a> &gt; <span class="el_source">SwaggerDiff.java</span></div><h1>SwaggerDiff.java</h1><pre class="source lang-java linenums">package com.deepoove.swagger.diff;
+
+import java.io.IOException;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.deepoove.swagger.diff.compare.SpecificationDiff;
+import com.deepoove.swagger.diff.model.ChangedEndpoint;
+import com.deepoove.swagger.diff.model.Endpoint;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import io.swagger.models.Swagger;
+import io.swagger.models.auth.AuthorizationValue;
+import io.swagger.parser.SwaggerCompatConverter;
+import io.swagger.parser.SwaggerParser;
+
+public class SwaggerDiff {
+
+    public static final String SWAGGER_VERSION_V2 = &quot;2.0&quot;;
+
+<span class="fc" id="L23">    private static Logger logger = LoggerFactory.getLogger(SwaggerDiff.class);</span>
+
+    private Swagger oldSpecSwagger;
+    private Swagger newSpecSwagger;
+
+    private List&lt;Endpoint&gt; newEndpoints;
+    private List&lt;Endpoint&gt; missingEndpoints;
+    private List&lt;ChangedEndpoint&gt; changedEndpoints;
+
+    /**
+     * compare two swagger 1.x doc
+     * 
+     * @param oldSpec
+     *            old api-doc location:Json or Http
+     * @param newSpec
+     *            new api-doc location:Json or Http
+     * @return swagger differences
+     */
+    public static SwaggerDiff compareV1(String oldSpec, String newSpec) {
+<span class="nc" id="L42">        return compare(oldSpec, newSpec, null, null);</span>
+    }
+
+    /**
+     * compare two swagger v2.0 doc
+     * 
+     * @param oldSpec
+     *            old api-doc location:Json or Http
+     * @param newSpec
+     *            new api-doc location:Json or Http
+     * @return swagger differences
+     */
+    public static SwaggerDiff compareV2(String oldSpec, String newSpec) {
+<span class="fc" id="L55">        return compare(oldSpec, newSpec, null, SWAGGER_VERSION_V2);</span>
+    }
+
+
+    /**
+     * compare two swagger v2.0 Sring
+     *
+     * @param oldSpec old api-doc json as string
+     * @param newSpec new api-doc json as string
+     * @return swagger differences
+     */
+    public static SwaggerDiff compareV2Raw(String oldSpec, String newSpec) {
+<span class="fc" id="L67">        return new SwaggerDiff(oldSpec, newSpec).compare();</span>
+    }
+    
+    /**
+     * Compare two swagger v2.0 docs by JsonNode
+     *
+     * @param oldSpec
+     *            old Swagger specification document in v2.0 format as a JsonNode
+     * @param newSpec
+     *            new Swagger specification document in v2.0 format as a JsonNode
+     * @return swagger differences
+     */
+    public static SwaggerDiff compareV2(JsonNode oldSpec, JsonNode newSpec) {
+<span class="fc" id="L80">        return new SwaggerDiff(oldSpec, newSpec).compare();</span>
+    }
+
+    public static SwaggerDiff compare(String oldSpec, String newSpec,
+            List&lt;AuthorizationValue&gt; auths, String version) {
+<span class="fc" id="L85">        return new SwaggerDiff(oldSpec, newSpec, auths, version).compare();</span>
+    }
+
+<span class="fc" id="L88">    private SwaggerDiff(String rawOldSpec, String rawNewSpec) {</span>
+<span class="fc" id="L89">        SwaggerParser swaggerParser = new SwaggerParser();</span>
+<span class="fc" id="L90">        oldSpecSwagger = swaggerParser.parse(rawOldSpec);</span>
+<span class="fc" id="L91">        newSpecSwagger = swaggerParser.parse(rawNewSpec);</span>
+
+<span class="pc bpc" id="L93" title="2 of 4 branches missed.">        if (null == oldSpecSwagger || null == newSpecSwagger) {</span>
+<span class="nc" id="L94">            throw new RuntimeException(&quot;cannot read api-doc from spec.&quot;);</span>
+        }
+<span class="fc" id="L96">    }</span>
+
+    private SwaggerDiff(String oldSpec, String newSpec, List&lt;AuthorizationValue&gt; auths,
+<span class="fc" id="L99">            String version) {</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">        if (SWAGGER_VERSION_V2.equals(version)) {</span>
+<span class="fc" id="L101">            SwaggerParser swaggerParser = new SwaggerParser();</span>
+<span class="fc" id="L102">            oldSpecSwagger = swaggerParser.read(oldSpec, auths, true);</span>
+<span class="fc" id="L103">            newSpecSwagger = swaggerParser.read(newSpec, auths, true);</span>
+<span class="fc" id="L104">        } else {</span>
+<span class="nc" id="L105">            SwaggerCompatConverter swaggerCompatConverter = new SwaggerCompatConverter();</span>
+            try {
+<span class="nc" id="L107">                oldSpecSwagger = swaggerCompatConverter.read(oldSpec, auths);</span>
+<span class="nc" id="L108">                newSpecSwagger = swaggerCompatConverter.read(newSpec, auths);</span>
+<span class="nc" id="L109">            } catch (IOException e) {</span>
+<span class="nc" id="L110">                logger.error(&quot;cannot read api-doc from spec[version_v1.x]&quot;, e);</span>
+<span class="nc" id="L111">                return;</span>
+<span class="nc" id="L112">            }</span>
+        }
+<span class="pc bpc" id="L114" title="2 of 4 branches missed.">        if (null == oldSpecSwagger || null == newSpecSwagger) { throw new RuntimeException(</span>
+                &quot;cannot read api-doc from spec.&quot;); }
+<span class="fc" id="L116">    }</span>
+
+<span class="fc" id="L118">    private SwaggerDiff(JsonNode oldSpec, JsonNode newSpec) {</span>
+<span class="fc" id="L119">        SwaggerParser swaggerParser = new SwaggerParser();</span>
+<span class="fc" id="L120">        oldSpecSwagger = swaggerParser.read(oldSpec, true);</span>
+<span class="fc" id="L121">        newSpecSwagger = swaggerParser.read(newSpec, true);</span>
+<span class="pc bpc" id="L122" title="2 of 4 branches missed.">        if (null == oldSpecSwagger || null == newSpecSwagger) { throw new RuntimeException(</span>
+            &quot;cannot read api-doc from spec.&quot;); }
+<span class="fc" id="L124">    }</span>
+
+    private SwaggerDiff compare() {
+<span class="fc" id="L127">    	SpecificationDiff diff = SpecificationDiff.diff(oldSpecSwagger, newSpecSwagger);</span>
+<span class="fc" id="L128">        this.newEndpoints = diff.getNewEndpoints();</span>
+<span class="fc" id="L129">        this.missingEndpoints = diff.getMissingEndpoints();</span>
+<span class="fc" id="L130">        this.changedEndpoints = diff.getChangedEndpoints();</span>
+<span class="fc" id="L131">        return this;</span>
+    }
+
+    public List&lt;Endpoint&gt; getNewEndpoints() {
+<span class="fc" id="L135">        return newEndpoints;</span>
+    }
+
+    public List&lt;Endpoint&gt; getMissingEndpoints() {
+<span class="fc" id="L139">        return missingEndpoints;</span>
+    }
+
+    public List&lt;ChangedEndpoint&gt; getChangedEndpoints() {
+<span class="fc" id="L143">        return changedEndpoints;</span>
+    }
+
+    public String getOldVersion() {
+<span class="fc" id="L147">        return oldSpecSwagger.getInfo().getVersion();</span>
+    }
+
+    public String getNewVersion() {
+<span class="fc" id="L151">        return newSpecSwagger.getInfo().getVersion();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Endpoint.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">swagger-diff</a> &gt; <a href="index.source.html" class="el_package">com.deepoove.swagger.diff.model</a> &gt; <span class="el_source">Endpoint.java</span></div><h1>Endpoint.java</h1><pre class="source lang-java linenums">package com.deepoove.swagger.diff.model;
+
+import io.swagger.models.HttpMethod;
+import io.swagger.models.Operation;
+import io.swagger.models.Path;
+
+<span class="fc" id="L7">public class Endpoint {</span>
+
+    private String pathUrl;
+    private HttpMethod method;
+    private String summary;
+
+    private Path path;
+    private Operation operation;
+
+    public String getPathUrl() {
+<span class="fc" id="L17">        return pathUrl;</span>
+    }
+
+    public void setPathUrl(String pathUrl) {
+<span class="fc" id="L21">        this.pathUrl = pathUrl;</span>
+<span class="fc" id="L22">    }</span>
+
+    public HttpMethod getMethod() {
+<span class="fc" id="L25">        return method;</span>
+    }
+
+    public void setMethod(HttpMethod method) {
+<span class="fc" id="L29">        this.method = method;</span>
+<span class="fc" id="L30">    }</span>
+
+    public String getSummary() {
+<span class="fc" id="L33">        return summary;</span>
+    }
+
+    public void setSummary(String summary) {
+<span class="fc" id="L37">        this.summary = summary;</span>
+<span class="fc" id="L38">    }</span>
+
+    public Path getPath() {
+<span class="fc" id="L41">        return path;</span>
+    }
+
+    public void setPath(Path path) {
+<span class="fc" id="L45">        this.path = path;</span>
+<span class="fc" id="L46">    }</span>
+
+    public Operation getOperation() {
+<span class="fc" id="L49">        return operation;</span>
+    }
+
+    public void setOperation(Operation operation) {
+<span class="fc" id="L53">        this.operation = operation;</span>
+<span class="fc" id="L54">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
