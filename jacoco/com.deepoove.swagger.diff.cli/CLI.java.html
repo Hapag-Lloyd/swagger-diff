@@ -57,7 +57,7 @@ import com.deepoove.swagger.diff.output.Render;
 <span class="fc" id="L57">            return;</span>
         }
 <span class="fc bfc" id="L59" title="All 2 branches covered.">        if (v){</span>
-<span class="fc" id="L60">            JCommander.getConsole().println(&quot;1.2.2&quot;);</span>
+<span class="fc" id="L60">        	jCommander.getConsole().println(&quot;1.2.2&quot;);</span>
 <span class="fc" id="L61">            return;</span>
         }
 
@@ -65,7 +65,7 @@ import com.deepoove.swagger.diff.output.Render;
 <span class="pc" id="L65">                ? SwaggerDiff.compareV2(oldSpec, newSpec) : SwaggerDiff.compareV1(oldSpec, newSpec);</span>
 
 <span class="fc" id="L67">        String render = getRender(outputMode).render(diff);</span>
-<span class="fc" id="L68">        JCommander.getConsole().println(render);</span>
+<span class="fc" id="L68">        jCommander.getConsole().println(render);</span>
 <span class="fc" id="L69">    }</span>
 
     private Render getRender(String outputMode) {

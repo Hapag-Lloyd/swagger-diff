@@ -65,7 +65,7 @@
 <a class="jxr_linenumber" name="L57" href="#L57">57</a>              <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L58" href="#L58">58</a>          }
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>          <strong class="jxr_keyword">if</strong> (v){
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>              JCommander.getConsole().println(<span class="jxr_string">"1.2.2"</span>);
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>          	jCommander.getConsole().println(<span class="jxr_string">"1.2.2"</span>);
 <a class="jxr_linenumber" name="L61" href="#L61">61</a>              <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L62" href="#L62">62</a>          }
 <a class="jxr_linenumber" name="L63" href="#L63">63</a>  
@@ -73,7 +73,7 @@
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>                  ? SwaggerDiff.compareV2(oldSpec, newSpec) : SwaggerDiff.compareV1(oldSpec, newSpec);
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>  
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>          String render = getRender(outputMode).render(diff);
-<a class="jxr_linenumber" name="L68" href="#L68">68</a>          JCommander.getConsole().println(render);
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>          jCommander.getConsole().println(render);
 <a class="jxr_linenumber" name="L69" href="#L69">69</a>      }
 <a class="jxr_linenumber" name="L70" href="#L70">70</a>  
 <a class="jxr_linenumber" name="L71" href="#L71">71</a>      <strong class="jxr_keyword">private</strong> <a name="Render" href="../../../../../com/deepoove/swagger/diff/output/Render.html#Render">Render</a> getRender(String outputMode) {
