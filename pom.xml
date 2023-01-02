@@ -45,9 +45,6 @@
 		<gpg.skip>true</gpg.skip>
 		<pmd.skip>true</pmd.skip>
 		<spotbugs.skip>true</spotbugs.skip>
-
-		<!-- Workaround as of version 3.2.0, see https://issues.apache.org/jira/browse/MDEP-753 -->
-		<maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
 	</properties>
 
 	<dependencies>
