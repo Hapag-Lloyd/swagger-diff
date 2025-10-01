@@ -4,3 +4,7 @@ updates:
     directory: /
     schedule:
       interval: daily
+    ignore:
+        # No more JDK 8 support
+      - dependency-name: org.junit.vintage:junit-vintage-engine
+        versions: "[6.0.0,)"
